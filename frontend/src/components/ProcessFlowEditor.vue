@@ -19,7 +19,17 @@
       <button :class="{active: activeTab==='monitor'}" @click="activeTab='monitor'">实例监控</button>
     </div>
     <div v-if="activeTab==='editor'">
-      <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect" />
+      <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect">
+        <template #node-input="nodeProps">
+          <InputNode v-bind="nodeProps" />
+        </template>
+        <template #node-action="nodeProps">
+          <ActionNode v-bind="nodeProps" />
+        </template>
+        <template #node-condition="nodeProps">
+          <ConditionNode v-bind="nodeProps" />
+        </template>
+      </VueFlow>
       <NodePropertyDialog
         v-if="propertyDialog.visible"
         :visible="propertyDialog.visible"
@@ -66,6 +76,9 @@
 import { ref, onMounted, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import NodePropertyDialog from './NodePropertyDialog.vue'
+import InputNode from './InputNode.vue'
+import ActionNode from './ActionNode.vue'
+import ConditionNode from './ConditionNode.vue'
 import {
   getProcessDefinitions,
   getProcessDefinition,
@@ -127,7 +140,6 @@ function addNode() {
 
 function onNodeDblClick(e) {
   const node = e.node
-  if (node.type === 'input' || node.type === 'output') return
   propertyDialog.value = {
     visible: true,
     node: { ...node }
@@ -194,6 +206,11 @@ async function saveToBackend() {
     processName.value = `流程定义-${year}${month}${day}-${hours}${minutes}${seconds}`;
   }
 
+  // If no nodes exist, add a default 'start' node before saving
+  if (nodes.value.length === 0) {
+    nodes.value.push({ id: '1', type: 'input', label: '开始', position: { x: 100, y: 100 } });
+  }
+
   const data = {
     id: selectedProcessId.value || Date.now().toString(),
     name: processName.value,
@@ -222,6 +239,11 @@ async function loadFromBackend() {
   processName.value = data.name
   nodes.value = data.nodes || []
   edges.value = data.edges || []
+
+  // Ensure there's always a start node if loading an empty process
+  if (nodes.value.length === 0) {
+    nodes.value.push({ id: '1', type: 'input', label: '开始', position: { x: 100, y: 100 } });
+  }
 }
 
 async function loadProcessList() {
