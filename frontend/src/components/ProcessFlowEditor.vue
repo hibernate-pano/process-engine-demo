@@ -14,19 +14,56 @@
       </select>
       <button v-if="selectedProcessId" @click="deleteProcess">删除流程</button>
     </div>
-    <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect" />
-    <NodePropertyDialog
-      v-if="propertyDialog.visible"
-      :visible="propertyDialog.visible"
-      :node="propertyDialog.node"
-      @save="onPropertySave"
-      @cancel="onPropertyCancel"
-    />
+    <div class="tab-bar">
+      <button :class="{active: activeTab==='editor'}" @click="activeTab='editor'">流程编辑</button>
+      <button :class="{active: activeTab==='monitor'}" @click="activeTab='monitor'">实例监控</button>
+    </div>
+    <div v-if="activeTab==='editor'">
+      <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect" />
+      <NodePropertyDialog
+        v-if="propertyDialog.visible"
+        :visible="propertyDialog.visible"
+        :node="propertyDialog.node"
+        @save="onPropertySave"
+        @cancel="onPropertyCancel"
+      />
+    </div>
+    <div v-else class="monitor-panel">
+      <h3>流程实例监控</h3>
+      <select v-model="selectedInstanceId" @change="onInstanceSelect">
+        <option value="">选择实例</option>
+        <option v-for="inst in instanceList" :key="inst.id" :value="inst.id">{{ inst.id }} ({{ inst.status }})</option>
+      </select>
+      <button v-if="selectedInstanceId && (currentInstanceStatus === 'COMPLETED' || currentInstanceStatus === 'FAILED' || currentInstanceStatus === 'RUNNING')" @click="startReplay">启动回放</button>
+      <button v-if="selectedInstanceId && currentInstanceStatus === 'REPLAY_RUNNING'" @click="pauseReplay">暂停回放</button>
+      <button v-if="selectedInstanceId && currentInstanceStatus === 'REPLAY_PAUSED'" @click="resumeReplay">恢复回放</button>
+      <button v-if="selectedInstanceId && (currentInstanceStatus === 'REPLAY_RUNNING' || currentInstanceStatus === 'RUNNING')" @click="stepInstance">单步执行</button>
+      <div v-if="instanceHistory && instanceHistory.length">
+        <ul>
+          <li v-for="record in instanceHistory" :key="record.nodeId">
+            节点: {{ record.nodeId }} | 状态: {{ record.status }} | 开始: {{ record.startTime }} | 结束: {{ record.endTime }}
+          </li>
+        </ul>
+        <div class="replay-controls">
+          <label>回放进度:</label>
+          <input
+            type="range"
+            v-model="replayTime"
+            :min="replayTimeRange.min"
+            :max="replayTimeRange.max"
+            step="1"
+            @input="onReplayTimeChange"
+          />
+          <span>{{ formatTime(replayTime) }}</span>
+        </div>
+      </div>
+      <div v-else>请选择实例查看历史</div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import NodePropertyDialog from './NodePropertyDialog.vue'
 import {
@@ -36,6 +73,7 @@ import {
   deleteProcessDefinition
 } from '../api/processApi'
 import '../components/styles/flow-theme.css'
+import axios from 'axios'
 
 const nodes = ref([
   { id: '1', type: 'input', label: '开始', position: { x: 100, y: 100 } }
@@ -45,6 +83,15 @@ const fileInput = ref(null)
 const processName = ref('')
 const processList = ref([])
 const selectedProcessId = ref('')
+const activeTab = ref('editor')
+const instanceList = ref([])
+const selectedInstanceId = ref('')
+const instanceHistory = ref([])
+const currentInstanceStatus = ref('')
+const replayTime = ref(0)
+const replayTimeRange = ref({ min: 0, max: 0 })
+const isPlaying = ref(false)
+let playbackIntervalId = null
 
 const propertyDialog = ref({
   visible: false,
@@ -202,8 +249,156 @@ function onConnect(params) {
   addEdges([params])
 }
 
+async function loadInstanceList() {
+  const { data } = await axios.get('/api/process-instances')
+  instanceList.value = data
+}
+
+async function onInstanceSelect() {
+  if (!selectedInstanceId.value) {
+    instanceHistory.value = []
+    return
+  }
+  clearInterval(playbackIntervalId)
+  isPlaying.value = false
+  const { data } = await axios.get(`/api/process-instances/${selectedInstanceId.value}/history`)
+  instanceHistory.value = data
+  await loadInstanceList()
+  const { data: currentInstance } = await axios.get(`/api/process-instances/${selectedInstanceId.value}`)
+  if (currentInstance && currentInstance.currentNodeId) {
+    currentInstanceStatus.value = currentInstance.status
+    nodes.value = nodes.value.map(node => {
+      if (node.id === currentInstance.currentNodeId) {
+        return { ...node, class: 'highlighted-node' }
+      } else {
+        const { class: _, ...rest } = node
+        return rest
+      }
+    })
+  }
+}
+
+async function stepInstance() {
+  if (!selectedInstanceId.value) return
+  clearInterval(playbackIntervalId)
+  isPlaying.value = false
+  await axios.post(`/api/process-instances/${selectedInstanceId.value}/replay`, { action: 'step' })
+  await onInstanceSelect()
+}
+
+async function startReplay() {
+  if (!selectedInstanceId.value) return
+  clearInterval(playbackIntervalId)
+  await axios.post(`/api/process-instances/${selectedInstanceId.value}/replay`, { action: 'start' })
+  await onInstanceSelect()
+  isPlaying.value = true
+  playbackIntervalId = setInterval(() => {
+    if (replayTime.value < replayTimeRange.value.max) {
+      replayTime.value += 1000;
+    } else {
+      clearInterval(playbackIntervalId);
+      isPlaying.value = false;
+      alert('回放结束');
+    }
+  }, 1000);
+}
+
+async function pauseReplay() {
+  if (!selectedInstanceId.value) return
+  clearInterval(playbackIntervalId)
+  isPlaying.value = false
+  await axios.post(`/api/process-instances/${selectedInstanceId.value}/replay`, { action: 'pause' })
+  await onInstanceSelect()
+}
+
+async function resumeReplay() {
+  if (!selectedInstanceId.value) return
+  if (!isPlaying.value && playbackIntervalId) {
+    await axios.post(`/api/process-instances/${selectedInstanceId.value}/replay`, { action: 'resume' })
+    await onInstanceSelect()
+    isPlaying.value = true
+    playbackIntervalId = setInterval(() => {
+      if (replayTime.value < replayTimeRange.value.max) {
+        replayTime.value += 1000;
+      } else {
+        clearInterval(playbackIntervalId);
+        isPlaying.value = false;
+        alert('回放结束');
+      }
+    }, 1000);
+  }
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return 'N/A'
+  const date = new Date(timestamp)
+  return date.toLocaleString()
+}
+
+function onReplayTimeChange() {
+  updateNodeHighlightByTime(replayTime.value)
+}
+
+function updateNodeHighlightByTime(time) {
+  if (!instanceHistory.value || instanceHistory.value.length === 0) {
+    nodes.value = nodes.value.map(node => { const { class: _, ...rest } = node; return rest })
+    return
+  }
+
+  const activeNodesAtTime = new Set()
+  let currentNodeIdAtTime = null
+
+  for (const record of instanceHistory.value) {
+    const recordStartTime = new Date(record.startTime).getTime()
+    const recordEndTime = record.endTime ? new Date(record.endTime).getTime() : Date.now()
+
+    if (time >= recordStartTime && time <= recordEndTime) {
+      activeNodesAtTime.add(record.nodeId)
+      if (record.status === 'RUNNING' || record.status === 'REPLAY_RUNNING' && record.endTime === null) {
+        currentNodeIdAtTime = record.nodeId
+      }
+    }
+  }
+
+  nodes.value = nodes.value.map(node => {
+    const newNode = { ...node }
+    let nodeClass = ''
+
+    if (node.id === currentNodeIdAtTime) {
+      nodeClass = 'highlighted-node'
+    } else if (activeNodesAtTime.has(node.id)) {
+      nodeClass = 'completed-node' 
+    } else {
+      const { class: _, ...rest } = node
+      return rest
+    }
+
+    if (nodeClass) {
+      newNode.class = nodeClass
+    } else {
+      delete newNode.class
+    }
+    return newNode
+  })
+}
+
+watch(instanceHistory, (newHistory) => {
+  if (newHistory.length > 0) {
+    const firstTime = new Date(newHistory[0].startTime).getTime()
+    const lastRecord = newHistory[newHistory.length - 1]
+    const lastTime = new Date(lastRecord.endTime || lastRecord.startTime).getTime()
+    replayTimeRange.value = { min: firstTime, max: lastTime }
+    replayTime.value = lastTime
+  } else {
+    replayTimeRange.value = { min: 0, max: 0 }
+    replayTime.value = 0
+  }
+  updateNodeHighlightByTime(replayTime.value)
+}, { deep: true })
+
 onMounted(() => {
   loadProcessList()
+  loadInstanceList()
 })
 </script>
 
@@ -254,5 +449,44 @@ select {
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 15px;
+}
+.tab-bar {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(60,60,60,0.06);
+  padding: 12px 18px;
+}
+.monitor-panel {
+  flex: 1;
+  padding: 18px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(60,60,60,0.06);
+}
+.replay-controls {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.replay-controls input[type="range"] {
+  flex-grow: 1;
+}
+.replay-controls span {
+  font-size: 14px;
+  color: #555;
+}
+
+.vue-flow__node.completed-node {
+  border: 1.5px solid #4caf50;
+  box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+  background: #e8f5e9;
 }
 </style>

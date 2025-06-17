@@ -32,4 +32,17 @@ public class ProcessInstanceController {
     public List<ProcessInstance> listAll() {
         return service.listAll();
     }
+
+    @GetMapping("/{id}/history")
+    public List<ProcessInstance.NodeExecutionRecord> getExecutionHistory(@PathVariable String id) {
+        ProcessInstance instance = service.getById(id);
+        return instance != null ? instance.getExecutionHistory() : null;
+    }
+
+    @PostMapping("/{id}/replay")
+    public String replayInstance(@PathVariable String id, @RequestBody Map<String, String> req) {
+        String action = req.get("action"); // start|pause|resume|step
+        // 这里只做接口占位，具体回放逻辑可在 service 层实现
+        return service.replayInstance(id, action);
+    }
 }

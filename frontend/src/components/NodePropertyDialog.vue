@@ -29,6 +29,20 @@
           <input v-model="localNode.condition" placeholder="如：battery > 20%" />
         </div>
       </div>
+      <div v-if="localNode.customProps && localNode.customProps.length">
+        <div v-for="(prop, idx) in localNode.customProps" :key="idx" class="custom-property-item">
+          <label>属性名</label>
+          <input v-model="prop.name" placeholder="自定义属性名" />
+          <label>属性值</label>
+          <input v-model="prop.value" placeholder="属性值" />
+          <button class="remove-btn" @click="removeCustomProp(idx)">删除</button>
+        </div>
+      </div>
+      <div class="new-custom-property">
+        <input v-model="newPropName" class="new-property-name" placeholder="新属性名" />
+        <input v-model="newPropValue" class="new-property-value" placeholder="新属性值" />
+        <button class="add-btn" @click="addCustomProp">添加</button>
+      </div>
       <div class="dialog-actions">
         <button @click="onSave">保存</button>
         <button @click="onCancel">取消</button>
@@ -38,13 +52,15 @@
 </template>
 
 <script setup>
-import { reactive, watch, toRefs } from 'vue'
+import { reactive, watch, toRefs, ref } from 'vue'
 const props = defineProps({
   visible: Boolean,
   node: Object
 })
 const emits = defineEmits(['save', 'cancel'])
 const localNode = reactive({ ...props.node })
+const newPropName = ref('')
+const newPropValue = ref('')
 
 watch(() => props.node, (val) => {
   Object.assign(localNode, val)
@@ -55,6 +71,18 @@ function onSave() {
 }
 function onCancel() {
   emits('cancel')
+}
+
+if (!localNode.customProps) localNode.customProps = []
+function addCustomProp() {
+  if (newPropName.value) {
+    localNode.customProps.push({ name: newPropName.value, value: newPropValue.value })
+    newPropName.value = ''
+    newPropValue.value = ''
+  }
+}
+function removeCustomProp(idx) {
+  localNode.customProps.splice(idx, 1)
 }
 </script>
 
