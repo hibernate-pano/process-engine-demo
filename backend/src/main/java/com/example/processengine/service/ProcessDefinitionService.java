@@ -23,8 +23,8 @@ public class ProcessDefinitionService {
         return repository.findById(id).orElse(null);
     }
 
-    public void save(ProcessDefinition definition) {
-        repository.save(definition);
+    public ProcessDefinition save(ProcessDefinition definition) {
+        return repository.save(definition);
     }
 
     public void delete(String id) {

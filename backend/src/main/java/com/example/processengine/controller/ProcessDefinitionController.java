@@ -27,8 +27,8 @@ public class ProcessDefinitionController {
     }
 
     @PostMapping
-    public void save(@RequestBody ProcessDefinition definition) {
-        service.save(definition);
+    public ProcessDefinition save(@RequestBody ProcessDefinition definition) {
+        return service.save(definition);
     }
 
     @DeleteMapping("/{id}")

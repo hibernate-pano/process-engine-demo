@@ -151,8 +151,16 @@ async function saveToBackend() {
     nodes: nodes.value,
     edges: edges.value
   }
-  await saveProcessDefinition(data)
+  const { data: savedProcess } = await saveProcessDefinition(data)
   alert('保存成功')
+
+  // 如果是新创建的流程，更新 selectedProcessId
+  if (!selectedProcessId.value) {
+    selectedProcessId.value = savedProcess.id;
+  }
+  // 重新加载当前流程数据，确保页面显示最新状态
+  await loadFromBackend();
+  // 更新流程列表
   await loadProcessList()
 }
 
