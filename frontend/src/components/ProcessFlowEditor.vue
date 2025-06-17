@@ -14,7 +14,7 @@
       </select>
       <button v-if="selectedProcessId" @click="deleteProcess">删除流程</button>
     </div>
-    <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" />
+    <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect" />
     <NodePropertyDialog
       v-if="propertyDialog.visible"
       :visible="propertyDialog.visible"
@@ -27,7 +27,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { VueFlow } from '@vue-flow/core'
+import { VueFlow, useVueFlow } from '@vue-flow/core'
 import NodePropertyDialog from './NodePropertyDialog.vue'
 import {
   getProcessDefinitions,
@@ -50,6 +50,8 @@ const propertyDialog = ref({
   visible: false,
   node: {}
 })
+
+const { addEdges } = useVueFlow()
 
 function addNode() {
   const id = (nodes.value.length + 1).toString()
@@ -194,6 +196,10 @@ async function deleteProcess() {
   nodes.value = []
   edges.value = []
   await loadProcessList()
+}
+
+function onConnect(params) {
+  addEdges([params])
 }
 
 onMounted(() => {
