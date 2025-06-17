@@ -3,10 +3,10 @@
 
 # 启动后端
 cd backend || exit 1
-if [ ! -f "target/processengine-backend-0.0.1-SNAPSHOT.jar" ]; then
-  echo "[INFO] 后端未编译，正在编译..."
-  mvn clean package -DskipTests || exit 1
-fi
+# if [ ! -f "target/processengine-backend-0.0.1-SNAPSHOT.jar" ]; then
+echo "[INFO] 后端正在编译..."
+mvn clean package -DskipTests || exit 1
+# fi
 nohup java -jar target/processengine-backend-0.0.1-SNAPSHOT.jar > backend.log 2>&1 &
 BACKEND_PID=$!
 echo "[OK] 后端已启动，PID: $BACKEND_PID"
@@ -14,6 +14,7 @@ cd ..
 
 # 启动前端
 cd frontend || exit 1
+nohub npm install
 nohup npm run dev > frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "[OK] 前端已启动，PID: $FRONTEND_PID"

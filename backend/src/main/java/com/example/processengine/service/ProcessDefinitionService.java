@@ -20,7 +20,7 @@ public class ProcessDefinitionService {
     }
 
     public ProcessDefinition getById(String id) {
-        return repository.findById(id);
+        return repository.findById(id).orElse(null);
     }
 
     public void save(ProcessDefinition definition) {
@@ -28,6 +28,6 @@ public class ProcessDefinitionService {
     }
 
     public void delete(String id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 }

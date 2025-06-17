@@ -1,0 +1,41 @@
+/* Chrome 原生风格流程编辑器美化 */
+.flow-canvas {
+  background: #f5f6fa;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 2px 8px rgba(60,60,60,0.06);
+  margin: 0 auto;
+  transition: box-shadow 0.2s;
+}
+.flow-canvas:focus-within {
+  box-shadow: 0 4px 16px rgba(60,60,60,0.12);
+}
+.vue-flow__node {
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(60,60,60,0.04);
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  font-size: 15px;
+  color: #222;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.vue-flow__node.selected, .vue-flow__node:focus {
+  border: 1.5px solid #1976d2;
+  box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+}
+.vue-flow__edge {
+  stroke: #bdbdbd;
+}
+.vue-flow__edge.selected {
+  stroke: #1976d2;
+}
+.vue-flow__controls {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(60,60,60,0.08);
+}
+.vue-flow__minimap {
+  background: #f5f6fa;
+  border-radius: 6px;
+}

@@ -26,7 +26,7 @@ public class ProcessInstanceService {
      * 启动流程实例
      */
     public ProcessInstance startInstance(String processDefinitionId) {
-        ProcessDefinition definition = definitionRepository.findById(processDefinitionId);
+        ProcessDefinition definition = definitionRepository.findById(processDefinitionId).orElse(null);
         if (definition == null) return null;
         ProcessInstance instance = new ProcessInstance();
         instance.setId(UUID.randomUUID().toString());
@@ -52,7 +52,7 @@ public class ProcessInstanceService {
     }
 
     public ProcessInstance getById(String id) {
-        return instanceRepository.findById(id);
+        return instanceRepository.findById(id).orElse(null);
     }
 
     public List<ProcessInstance> listAll() {

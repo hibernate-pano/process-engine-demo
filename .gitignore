@@ -6,3 +6,8 @@
 */.idea
 .vscode
 .idea
+
+*/target
+
+
+*/*.log
