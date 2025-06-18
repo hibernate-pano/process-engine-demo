@@ -461,6 +461,7 @@ onMounted(() => {
   height: 90vh;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 }
 .toolbar {
   margin-bottom: 10px;
@@ -541,5 +542,10 @@ select {
   border: 1.5px solid #4caf50;
   box-shadow: 0 2px 8px rgba(76,175,80,0.08);
   background: #e8f5e9;
+}
+
+.flow-canvas {
+  min-height: 500px;
+  overflow: visible !important;
 }
 </style>
