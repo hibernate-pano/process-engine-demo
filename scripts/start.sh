@@ -2,7 +2,9 @@
 # 一键启动前后端脚本
 
 # 启动后端
-cd backend || exit 1
+
+DIR=$(cd "$(dirname "$0")" && pwd)
+cd $DIR/../backend || exit 1
 # if [ ! -f "target/processengine-backend-0.0.1-SNAPSHOT.jar" ]; then
 echo "[INFO] 后端正在编译..."
 mvn clean package -DskipTests || exit 1
@@ -13,8 +15,8 @@ echo "[OK] 后端已启动，PID: $BACKEND_PID"
 cd ..
 
 # 启动前端
-cd frontend || exit 1
-nohub npm install
+cd $DIR/../frontend || exit 1
+nohup npm install
 nohup npm run dev > frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "[OK] 前端已启动，PID: $FRONTEND_PID"

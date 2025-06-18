@@ -1,6 +1,8 @@
 <template>
-  <div class="vue-flow__node-input">
+  <div class="custom-node-card">
     <div class="node-header">{{ label }}</div>
+    <div class="node-desc">流程起点/入口</div>
+    <div class="animated-bar"></div>
     <Handle type="source" :position="Position.Bottom" />
   </div>
 </template>
@@ -34,43 +36,52 @@ defineProps({
 </script>
 
 <style scoped>
-.vue-flow__node-input {
-  width: 120px;
-  background: #c8e6c9; /* Light green background */
-  border: 1px solid #4caf50; /* Green border */
-  border-radius: 8px;
-  padding: 10px;
+.custom-node-card {
+  width: 220px;
+  min-height: 90px;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(60, 180, 120, 0.18);
+  padding: 24px 32px 18px 32px;
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-  color: #333;
+  font-family: 'Fira Mono', monospace;
+  font-size: 1.2em;
+  color: #fff;
   position: relative;
-  min-height: 50px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+  margin-bottom: 12px;
 }
-
+.custom-node-card:hover {
+  transform: scale(1.06) rotate(-1deg);
+  box-shadow: 0 12px 36px rgba(60, 180, 120, 0.28);
+}
 .node-header {
   font-weight: bold;
-  color: #2e7d32; /* Darker green for header */
+  font-size: 1.4em;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-
-/* 移除原有的伪 Handle 样式 */
-/*
-.vue-flow__handle {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #5F5F5F;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: crosshair;
+.node-desc {
+  font-size: 0.95em;
+  opacity: 0.85;
+  margin-bottom: 8px;
 }
-
-.vue-flow__handle-bottom {
-  bottom: -6px;
+.animated-bar {
+  width: 80%;
+  height: 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #43e97b, #38f9d7, #43e97b);
+  background-size: 200% 100%;
+  animation: bar-move 2.2s linear infinite;
+  margin: 0 auto 0 auto;
 }
-*/
+@keyframes bar-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
 </style> 

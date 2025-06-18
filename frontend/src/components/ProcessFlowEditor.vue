@@ -19,7 +19,21 @@
       <button :class="{active: activeTab==='monitor'}" @click="activeTab='monitor'">实例监控</button>
     </div>
     <div v-if="activeTab==='editor'">
-      <VueFlow v-model:nodes="nodes" v-model:edges="edges" class="flow-canvas" @nodeDoubleClick="onNodeDblClick" @connect="onConnect">
+      <VueFlow
+        v-model:nodes="nodes"
+        v-model:edges="edges"
+        class="flow-canvas"
+        :fit-view="true"
+        :zoom-on-scroll="true"
+        :pan-on-drag="true"
+        :min-zoom="0.3"
+        :max-zoom="2.2"
+        :background-color="'#181c23'"
+        :background-gap="32"
+        :background-size="1"
+        @nodeDoubleClick="onNodeDblClick"
+        @connect="onConnect"
+      >
         <template #node-input="nodeProps">
           <InputNode v-bind="nodeProps" />
         </template>
@@ -29,6 +43,19 @@
         <template #node-condition="nodeProps">
           <ConditionNode v-bind="nodeProps" />
         </template>
+        <!-- SVG 动态渐变定义 -->
+        <svg width="0" height="0">
+          <defs>
+            <linearGradient id="animated-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#43e97b">
+                <animate attributeName="stop-color" values="#43e97b;#38f9d7;#43e97b" dur="2s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stop-color="#38f9d7">
+                <animate attributeName="stop-color" values="#38f9d7;#43e97b;#38f9d7" dur="2s" repeatCount="indefinite" />
+              </stop>
+            </linearGradient>
+          </defs>
+        </svg>
       </VueFlow>
       <NodePropertyDialog
         v-if="propertyDialog.visible"
@@ -268,7 +295,7 @@ async function deleteProcess() {
 }
 
 function onConnect(params) {
-  addEdges([params])
+  addEdges([{ ...params, type: 'default', animated: true }])
 }
 
 async function loadInstanceList() {
@@ -419,6 +446,10 @@ watch(instanceHistory, (newHistory) => {
 }, { deep: true })
 
 onMounted(() => {
+  // 保证初始化时至少有一个"开始"节点
+  if (!nodes.value || nodes.value.length === 0) {
+    nodes.value = [{ id: '1', type: 'input', label: '开始', position: { x: 100, y: 100 } }]
+  }
   loadProcessList()
   loadInstanceList()
 })

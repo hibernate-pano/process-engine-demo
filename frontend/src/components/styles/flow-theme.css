@@ -1,9 +1,10 @@
 /* Chrome 原生风格流程编辑器美化 */
 .flow-canvas {
-  background: #f5f6fa;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 2px 8px rgba(60, 60, 60, 0.06);
+  background: repeating-linear-gradient(0deg, #23272f 0px, #23272f 1px, #181c23 1px, #181c23 32px),
+              repeating-linear-gradient(90deg, #23272f 0px, #23272f 1px, #181c23 1px, #181c23 32px);
+  border-radius: 12px;
+  border: 1.5px solid #23272f;
+  box-shadow: 0 4px 24px rgba(30,40,60,0.18);
   margin: 0 auto;
   transition: box-shadow 0.2s;
 }
@@ -31,7 +32,10 @@
   background: #fff3e0; /* 浅橙色背景 */
 }
 .vue-flow__edge {
-  stroke: #bdbdbd;
+  stroke: url(#animated-gradient);
+  stroke-width: 3px;
+  stroke-dasharray: 8 6;
+  animation: dashmove 1.2s linear infinite;
 }
 .vue-flow__edge.selected {
   stroke: #1976d2;
@@ -44,4 +48,13 @@
 .vue-flow__minimap {
   background: #f5f6fa;
   border-radius: 6px;
+}
+@keyframes dashmove {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+/* SVG 动态渐变 */
+.vue-flow__edges {
+  /* 让 SVG 渐变可用 */
 }
