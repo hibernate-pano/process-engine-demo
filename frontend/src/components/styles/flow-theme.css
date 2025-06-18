@@ -1,12 +1,12 @@
 /* Chrome 原生风格流程编辑器美化 */
 .flow-canvas {
-  background: repeating-linear-gradient(0deg, #23272f 0px, #23272f 1px, #181c23 1px, #181c23 32px),
-              repeating-linear-gradient(90deg, #23272f 0px, #23272f 1px, #181c23 1px, #181c23 32px);
+  background: #f8fafc;
   border-radius: 12px;
-  border: 1.5px solid #23272f;
-  box-shadow: 0 4px 24px rgba(30,40,60,0.18);
+  border: 1.5px solid #e0e0e0;
+  box-shadow: 0 4px 24px rgba(30,40,60,0.08);
   margin: 0 auto;
   transition: box-shadow 0.2s;
+  min-height: 600px;
 }
 .flow-canvas:focus-within {
   box-shadow: 0 4px 16px rgba(60, 60, 60, 0.12);
@@ -32,10 +32,10 @@
   background: #fff3e0; /* 浅橙色背景 */
 }
 .vue-flow__edge {
-  stroke: url(#animated-gradient);
-  stroke-width: 3px;
-  stroke-dasharray: 8 6;
-  animation: dashmove 1.2s linear infinite;
+  stroke: #222;
+  stroke-width: 2px;
+  stroke-dasharray: none;
+  animation: none;
 }
 .vue-flow__edge.selected {
   stroke: #1976d2;
@@ -57,4 +57,27 @@
 /* SVG 动态渐变 */
 .vue-flow__edges {
   /* 让 SVG 渐变可用 */
+}
+
+/* SVG箭头定义 */
+.vue-flow__edges svg defs {
+  marker {
+    markerWidth: 8;
+    markerHeight: 8;
+    refX: 8;
+    refY: 4;
+    orient: auto;
+    markerUnits: strokeWidth;
+  }
+}
+
+.vue-flow__edge-label {
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 1px 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  pointer-events: none;
 }

@@ -1,105 +1,70 @@
 <template>
-  <div class="custom-node-card condition">
-    <Handle type="target" :position="Position.Top" />
-    <div class="node-header">判断节点</div>
-    <div class="node-body">
-      <strong>名称:</strong> {{ label }}<br>
-      <span v-if="condition"><strong>条件:</strong> {{ condition }}</span>
-      <div v-if="customProps && customProps.length > 0" class="custom-props">
-        <div v-for="(prop, idx) in customProps" :key="idx">
-          <strong>{{ prop.name }}:</strong> {{ prop.value }}
-        </div>
-      </div>
+  <div class="diamond-node">
+    <svg width="100" height="100">
+      <polygon points="50,10 90,50 50,90 10,50" fill="#fff" stroke="#222" stroke-width="2" />
+      <text x="50" y="48" text-anchor="middle" font-size="16" font-weight="bold" fill="#ff7043">判断节点</text>
+    </svg>
+    <div class="diamond-label">
+      <span v-if="condition">{{ condition }}</span>
     </div>
-    <div class="animated-bar"></div>
-    <Handle type="source" :position="Position.Bottom" />
+    <Handle type="target" :position="Position.Top" :id="'in'" class="node-handle node-handle-top" />
+    <Handle type="source" :position="Position.Left" :id="'if'" class="node-handle node-handle-left" />
+    <Handle type="source" :position="Position.Right" :id="'else'" class="node-handle node-handle-right" />
+    <Handle type="source" :position="Position.Bottom" :id="'default'" class="node-handle node-handle-bottom" />
   </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue';
-import { Handle, Position } from '@vue-flow/core'; // Import Handle and Position
+import { Handle, Position } from '@vue-flow/core';
 
 defineProps({
   label: String,
-  data: Object,
-  // 继承 Vue Flow 提供的所有节点属性
-  id: String,
-  type: String,
-  position: Object,
-  selected: Boolean,
-  connectable: Boolean,
-  isValidTarget: Boolean,
-  isValidSource: Boolean,
-  parent: String,
-  draggable: Boolean,
-  selectable: Boolean,
-  focusable: Boolean,
-  resizable: Boolean,
-  initialized: Boolean,
-  dimensions: Object,
-  handleBounds: Object,
-  computedPosition: Object,
-  isParent: Boolean,
-  // 自定义属性
-  condition: String,
-  customProps: Array,
+  condition: String
 });
 </script>
 
 <style scoped>
-.custom-node-card.condition {
-  width: 240px;
-  min-height: 110px;
-  background: linear-gradient(135deg, #ff7043 0%, #ffa726 100%);
-  border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(255, 112, 67, 0.18);
-  padding: 24px 32px 18px 32px;
-  text-align: center;
-  font-family: 'Fira Mono', monospace;
-  font-size: 1.1em;
-  color: #fff;
-  position: relative;
+.diamond-node {
+  width: 100px;
+  height: 100px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.18s, box-shadow 0.18s;
-  margin-bottom: 12px;
+  position: relative;
+  flex-direction: column;
 }
-.custom-node-card.condition:hover {
-  transform: scale(1.06) rotate(-1deg);
-  box-shadow: 0 12px 36px rgba(255, 112, 67, 0.28);
+.diamond-label {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #888;
 }
-.node-header {
-  font-weight: bold;
-  font-size: 1.3em;
-  margin-bottom: 6px;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+.node-handle {
+  position: absolute;
+  z-index: 2;
 }
-.node-body {
-  font-size: 1em;
-  word-break: break-word;
-  margin-bottom: 8px;
+.node-handle-top {
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
 }
-.animated-bar {
-  width: 80%;
-  height: 6px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #ff7043, #ffa726, #ff7043);
-  background-size: 200% 100%;
-  animation: bar-move 2.2s linear infinite;
-  margin: 0 auto 0 auto;
+.node-handle-bottom {
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
 }
-@keyframes bar-move {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+.node-handle-left {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
-.custom-props {
-  margin-top: 8px;
-  padding-top: 5px;
-  border-top: 1px dashed #ffe0b2;
-  text-align: left;
+.node-handle-right {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style> 

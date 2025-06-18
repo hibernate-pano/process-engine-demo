@@ -1,107 +1,59 @@
 <template>
-  <div class="custom-node-card action">
-    <Handle type="target" :position="Position.Top" />
-    <div class="node-header">动作节点</div>
-    <div class="node-body">
-      <strong>名称:</strong> {{ label }}<br>
-      <span v-if="deviceType"><strong>设备:</strong> {{ deviceType }}<br></span>
-      <span v-if="deviceAction"><strong>动作:</strong> {{ deviceAction }}</span>
-      <div v-if="customProps && customProps.length > 0" class="custom-props">
-        <div v-for="(prop, idx) in customProps" :key="idx">
-          <strong>{{ prop.name }}:</strong> {{ prop.value }}
-        </div>
-      </div>
+  <div class="rect-node">
+    <Handle type="target" :position="Position.Top" :id="'in'" class="node-handle node-handle-top" />
+    <div class="node-header">{{ label }}</div>
+    <div v-if="deviceType || deviceAction" class="node-desc">
+      <span v-if="deviceType">设备：{{ deviceType }} </span>
+      <span v-if="deviceAction">动作：{{ deviceAction }}</span>
     </div>
-    <div class="animated-bar"></div>
-    <Handle type="source" :position="Position.Bottom" />
+    <Handle type="source" :position="Position.Bottom" :id="'out'" class="node-handle node-handle-bottom" />
   </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue';
-import { Handle, Position } from '@vue-flow/core'; // Import Handle and Position
-
+import { Handle, Position } from '@vue-flow/core';
 defineProps({
   label: String,
-  data: Object,
-  // 继承 Vue Flow 提供的所有节点属性
-  id: String,
-  type: String,
-  position: Object,
-  selected: Boolean,
-  connectable: Boolean,
-  isValidTarget: Boolean,
-  isValidSource: Boolean,
-  parent: String,
-  draggable: Boolean,
-  selectable: Boolean,
-  focusable: Boolean,
-  resizable: Boolean,
-  initialized: Boolean,
-  dimensions: Object,
-  handleBounds: Object,
-  computedPosition: Object,
-  isParent: Boolean,
-  // 自定义属性
   deviceType: String,
-  deviceAction: String,
-  customProps: Array,
+  deviceAction: String
 });
 </script>
 
 <style scoped>
-.custom-node-card.action {
-  width: 240px;
-  min-height: 110px;
-  background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
-  border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(33, 150, 243, 0.18);
-  padding: 24px 32px 18px 32px;
-  text-align: center;
-  font-family: 'Fira Mono', monospace;
-  font-size: 1.1em;
-  color: #fff;
-  position: relative;
+.rect-node {
+  width: 180px;
+  min-height: 60px;
+  background: #fff;
+  border: 2px solid #222;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.18s, box-shadow 0.18s;
-  margin-bottom: 12px;
-}
-.custom-node-card.action:hover {
-  transform: scale(1.06) rotate(1deg);
-  box-shadow: 0 12px 36px rgba(33, 150, 243, 0.28);
+  padding: 12px 8px;
+  position: relative;
 }
 .node-header {
+  font-size: 18px;
   font-weight: bold;
-  font-size: 1.3em;
-  margin-bottom: 6px;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  color: #222;
+  margin-bottom: 2px;
 }
-.node-body {
-  font-size: 1em;
-  word-break: break-word;
-  margin-bottom: 8px;
+.node-desc {
+  font-size: 13px;
+  color: #888;
 }
-.animated-bar {
-  width: 80%;
-  height: 6px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #2196f3, #21cbf3, #2196f3);
-  background-size: 200% 100%;
-  animation: bar-move 2.2s linear infinite;
-  margin: 0 auto 0 auto;
+.node-handle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
 }
-@keyframes bar-move {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+.node-handle-top {
+  top: -10px;
 }
-.custom-props {
-  margin-top: 8px;
-  padding-top: 5px;
-  border-top: 1px dashed #b3e5fc;
-  text-align: left;
+.node-handle-bottom {
+  bottom: -10px;
 }
 </style> 

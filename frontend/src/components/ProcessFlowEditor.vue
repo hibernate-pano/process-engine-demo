@@ -28,9 +28,6 @@
         :pan-on-drag="true"
         :min-zoom="0.3"
         :max-zoom="2.2"
-        :background-color="'#181c23'"
-        :background-gap="32"
-        :background-size="1"
         @nodeDoubleClick="onNodeDblClick"
         @connect="onConnect"
       >
@@ -43,19 +40,6 @@
         <template #node-condition="nodeProps">
           <ConditionNode v-bind="nodeProps" />
         </template>
-        <!-- SVG 动态渐变定义 -->
-        <svg width="0" height="0">
-          <defs>
-            <linearGradient id="animated-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#43e97b">
-                <animate attributeName="stop-color" values="#43e97b;#38f9d7;#43e97b" dur="2s" repeatCount="indefinite" />
-              </stop>
-              <stop offset="100%" stop-color="#38f9d7">
-                <animate attributeName="stop-color" values="#38f9d7;#43e97b;#38f9d7" dur="2s" repeatCount="indefinite" />
-              </stop>
-            </linearGradient>
-          </defs>
-        </svg>
       </VueFlow>
       <NodePropertyDialog
         v-if="propertyDialog.visible"
@@ -295,7 +279,11 @@ async function deleteProcess() {
 }
 
 function onConnect(params) {
-  addEdges([{ ...params, type: 'default', animated: true }])
+  addEdges([{
+    ...params,
+    type: 'default',
+    label: params.sourceHandle === 'if' ? '是' : params.sourceHandle === 'else' ? '否' : params.sourceHandle === 'default' ? '其它' : ''
+  }])
 }
 
 async function loadInstanceList() {
